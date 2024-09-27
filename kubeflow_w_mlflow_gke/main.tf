@@ -2,7 +2,7 @@
 locals {
     project_id = "jamesdv-mlops"
     gcp_region = "us-central1"
-    gke_version = "1.25"
+    gke_version = "1.31"
     cluster_name = "kubeflow-mlops"
 }
 
