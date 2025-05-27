@@ -1,0 +1,100 @@
+# Kubeflow Deployment Configuration
+# This file contains the Kubernetes manifests for deploying Kubeflow components
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeflow
+  labels:
+    istio-injection: enabled
+
+---
+# Kubeflow Pipelines Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeflow-pipelines
+  labels:
+    istio-injection: enabled
+
+---
+# Storage Class for Kubeflow
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: kubeflow-storage
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+  replication-type: none
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+
+---
+# Persistent Volume for Kubeflow artifacts
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kubeflow-artifacts-pv
+  namespace: kubeflow-pipelines
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: kubeflow-storage
+  gcePersistentDisk:
+    pdName: kubeflow-mlops-artifacts
+    fsType: ext4
+
+---
+# Persistent Volume Claim for Kubeflow artifacts
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kubeflow-artifacts-pvc
+  namespace: kubeflow-pipelines
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: kubeflow-storage
+  volumeName: kubeflow-artifacts-pv
+
+---
+# ConfigMap for Kubeflow database configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeflow-db-config
+  namespace: kubeflow-pipelines
+data:
+  MYSQL_HOST: "kubeflow-mlops-metadata.c0123456789.us-central1.gcp.sql.goog"
+  MYSQL_PORT: "3306"
+  MYSQL_DATABASE: "kubeflow_metadata"
+  MYSQL_USER: "kubeflow"
+
+---
+# Secret for database password
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubeflow-db-secret
+  namespace: kubeflow-pipelines
+type: Opaque
+data:
+  MYSQL_PASSWORD: a3ViZWZsb3cxMjMh  # base64 encoded "kubeflow123!"
+
+---
+# Service Account for Kubeflow Pipelines
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubeflow-pipelines-sa
+  namespace: kubeflow-pipelines
+  annotations:
+    iam.gke.io/gcp-service-account: kubeflow-mlops-pipelines-sa@jamesdv-mlops.iam.gserviceaccount.com

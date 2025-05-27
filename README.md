@@ -1,7 +1,12 @@
 # MLOPtionS
+
+### About
 Recipes for various MLOps solutions, and their trade-offs
 
-### Kubeflow MLOps Platform
+### [Kubeflow AWS](./kubeflow_aws/)
+
+
+### [Kubeflow GKE](./kubeflow_w_mlflow_gke/)
 A multi-user MLOps platform with Kubeflow. Deployed on GKE. Integrated with MLFlow. 
 
 ### Metaflow MLOps Platform 
