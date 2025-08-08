@@ -168,7 +168,7 @@ resource "google_container_node_pool" "kubeflow_gpu_pool" {
         # GPU configuration
         guest_accelerator {
             type = "nvidia-tesla-t4"
-            count = 3
+            count = 1
         }
     }
     
