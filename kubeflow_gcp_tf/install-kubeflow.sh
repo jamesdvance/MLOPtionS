@@ -26,6 +26,7 @@ gcloud container clusters get-credentials $CLUSTER_NAME \
 echo "Cloning Kubeflow manifests..."
 if [ ! -d "../../kubeflow/manifests" ]; then
     echo "Must have kubeflow manifests directory" 
+    echo "Pull the kubeflow repo from https://github.com/kubeflow/manifests.git"
     exit
 fi
 
@@ -43,7 +44,6 @@ kubectl wait --for=condition=ready pod -l app=webhook -n cert-manager --timeout=
 
 # Install Istio
 echo "Installing Istio..."
-cd manifests
 kubectl apply -k common/istio-1-17/istio-crds/base | kubectl apply -f -
 kubectl apply -k common/istio-1-17/istio-namespace/base | kubectl apply -f -
 kubectl apply -k common/istio-1-17/istio-install/base | kubectl apply -f -
