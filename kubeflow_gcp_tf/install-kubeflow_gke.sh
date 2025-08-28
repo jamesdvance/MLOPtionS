@@ -26,11 +26,13 @@ gcloud container clusters get-credentials $CLUSTER_NAME \
 echo "Cloning Kubeflow manifests..."
 if [ ! -d "../../kubeflow/manifests" ]; then
     echo "Must have kubeflow manifests directory" 
-    echo "Pull the kubeflow repo from https://github.com/kubeflow/manifests.git"
+    echo "Pull the kubeflow repo from https://github.com/kubeflow/manifests.git i.e. cd ../../ && mkdir kubeflow && cd kubeflow && git pull https://github.com/kubeflow/manifests.git"
     exit
 fi
 
 cd ../../kubeflow/manifests
+
+# https://github.com/kubeflow/manifests
 
 # Install cert-manager
 echo "Installing cert-manager..."
@@ -46,11 +48,9 @@ kubectl wait --for=condition=ready pod -l app=webhook -n cert-manager --timeout=
 echo "Installing Istio..."
 kubectl apply -k common/istio/istio-crds/base
 kubectl apply -k common/istio/istio-namespace/base
-kubectl apply -k common/istio/istio-install/base
-
-# Wait for Istio to be ready
-echo "Waiting for Istio to be ready..."
-kubectl wait --for=condition=ready pod -l app=istiod -n istio-system --timeout=300s
+kubectl apply -k common/istio/istio-install/overlays/gke # install for gke
+echo "Waiting for all Istio Pods to become ready..."
+kubectl wait --for=condition=Ready pods --all -n istio-system --timeout 300s
 
 # Install Dex
 echo "Installing Dex..."
